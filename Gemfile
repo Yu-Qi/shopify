@@ -6,6 +6,9 @@ ruby '3.3.4'
 # Rails 核心框架
 gem 'rails', '~> 7.1.0'
 
+# 啟動效能
+gem 'bootsnap', require: false
+
 # 資料庫
 gem 'pg', '~> 1.5'  # PostgreSQL 資料庫驅動
 
@@ -38,6 +41,11 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'faker'
+end
+
+group :test do
+  gem 'sqlite3', '~> 1.6'
+  gem 'shoulda-matchers', '~> 6.1'
 end
 
 group :development do

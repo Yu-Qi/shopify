@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shopify_rails_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: shopify_rails_development
+      RAILS_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: 87e39b88fa33a4f3e861ba13733c720ff53fd08528c0ad4cc7f01c7fb66562d5265cafc48acda6e32b0b642e8b20a28c59a66caee5477ee373a5a83349646ac3
+    volumes:
+      - .:/app:cached
+      - bundle-cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+    command: bash -lc "bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0 -p 3000"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  sidekiq:
+    build:
+      context: .
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: shopify_rails_development
+      RAILS_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: 87e39b88fa33a4f3e861ba13733c720ff53fd08528c0ad4cc7f01c7fb66562d5265cafc48acda6e32b0b642e8b20a28c59a66caee5477ee373a5a83349646ac3
+    volumes:
+      - .:/app:cached
+      - bundle-cache:/usr/local/bundle
+    depends_on:
+      - db
+      - redis
+    command: bash -lc "bundle exec sidekiq"
+
+volumes:
+  db-data:
+  bundle-cache:
+

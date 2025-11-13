@@ -24,14 +24,45 @@ class ApplicationController < ActionController::API
     render json: { error: '未授權' }, status: :unauthorized unless current_user
   end
 
+  def current_seller_profile
+    return unless current_user
+
+    @current_seller_profile ||= current_user.seller_profile
+  end
+
+  def current_buyer_profile
+    return unless current_user
+
+    @current_buyer_profile ||= current_user.buyer_profile
+  end
+
+  def require_seller_profile!
+    unless current_seller_profile
+      render json: { error: '需要店家資料' }, status: :forbidden
+      return false
+    end
+    true
+  end
+
+  def require_buyer_profile!
+    unless current_buyer_profile
+      render json: { error: '需要買家資料' }, status: :forbidden
+      return false
+    end
+    true
+  end
+
   # 設定當前租戶
   # 從請求參數或 headers 中取得租戶資訊
   def set_current_tenant
     tenant_id = params[:tenant_id] || request.headers['X-Tenant-Id']
-    if tenant_id
-      @current_tenant = current_user.tenants.find_by(id: tenant_id)
-      ActsAsTenant.current_tenant = @current_tenant
-    end
+    return unless tenant_id
+
+    seller_profile = current_seller_profile
+    return unless seller_profile
+
+    @current_tenant = seller_profile.tenants.find_by(id: tenant_id)
+    ActsAsTenant.current_tenant = @current_tenant
   end
 
   # 檢查租戶是否存在

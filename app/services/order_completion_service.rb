@@ -14,8 +14,11 @@ class OrderCompletionService < ApplicationService
   # 完成訂單
   def call
     # 檢查訂單是否可以完成
-    unless @order.can_transition_to?('completed')
-      return failure(["訂單狀態為 #{@order.status}，無法完成"])
+    unless @order.can_transition_to?(Order::STATUS_COMPLETED)
+      return failure(
+        ["訂單狀態為 #{@order.status}，無法完成"],
+        code: ErrorCodes::Order::Completion::INVALID_STATE
+      )
     end
 
     # 使用 transaction 確保資料一致性
@@ -24,7 +27,7 @@ class OrderCompletionService < ApplicationService
       ActsAsTenant.current_tenant = @tenant
 
       # 更新訂單狀態
-      @order.update!(status: 'completed')
+      @order.update!(status: Order::STATUS_COMPLETED)
 
       # 這裡可以觸發其他業務邏輯，例如：
       # - 發送完成通知給客戶
@@ -36,7 +39,11 @@ class OrderCompletionService < ApplicationService
     end
   rescue StandardError => e
     Rails.logger.error("OrderCompletionService error: #{e.message}")
-    failure(["完成訂單時發生錯誤：#{e.message}"], status: :internal_server_error)
+    failure(
+      ["完成訂單時發生錯誤：#{e.message}"],
+      status: :internal_server_error,
+      code: ErrorCodes::Order::Completion::UNEXPECTED_ERROR
+    )
   end
 end
 

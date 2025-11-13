@@ -6,17 +6,18 @@ module Api
   module V1
     class TenantsController < ApplicationController
       before_action :authenticate_user!
+      before_action :require_seller_profile!
       before_action :set_tenant, only: [:show, :update, :destroy]
 
       # 取得當前用戶的所有租戶
       def my_tenants
-        tenants = current_user.tenants
+        tenants = current_seller_profile.tenants
         render json: tenants, status: :ok
       end
 
       # 取得所有租戶（當前用戶的）
       def index
-        tenants = current_user.tenants
+        tenants = current_seller_profile.tenants
         render json: tenants, status: :ok
       end
 
@@ -28,7 +29,7 @@ module Api
       # 建立新租戶
       def create
         # 使用 Service Object 處理業務邏輯
-        result = TenantService.call(current_user, tenant_params)
+        result = TenantService.call(current_seller_profile, tenant_params)
         
         if result[:success]
           render json: result[:data], status: :created
@@ -59,7 +60,7 @@ module Api
 
       def set_tenant
         # 確保只能存取自己的租戶
-        @tenant = current_user.tenants.find_by(id: params[:id])
+        @tenant = current_seller_profile.tenants.find_by(id: params[:id])
         unless @tenant
           render json: { error: '租戶不存在或無權限存取' }, status: :not_found
         end

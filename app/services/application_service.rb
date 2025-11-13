@@ -27,8 +27,14 @@ class ApplicationService
   end
 
   # 失敗回應的輔助方法
-  def failure(errors, status: :unprocessable_entity)
-    { success: false, errors: errors, status: status }
+  def failure(errors, status: :unprocessable_entity, code: nil)
+    response = {
+      success: false,
+      errors: Array(errors),
+      status: status
+    }
+    response[:error_code] = code if code
+    response
   end
 end
 

@@ -6,6 +6,7 @@ module Api
   module V1
     class OrdersController < ApplicationController
       before_action :authenticate_user!
+      before_action :require_seller_profile!
       before_action :set_tenant
       before_action :set_shop
       before_action :set_order, only: [:show, :update, :cancel, :complete]
@@ -72,7 +73,7 @@ module Api
 
       def set_tenant
         # 確保只能存取自己的租戶
-        @tenant = current_user.tenants.find_by(id: params[:tenant_id])
+        @tenant = current_seller_profile.tenants.find_by(id: params[:tenant_id])
         unless @tenant
           render json: { error: '租戶不存在或無權限存取' }, status: :not_found
           return false

@@ -17,13 +17,13 @@ class CreateOrders < ActiveRecord::Migration[7.1]
     end
 
     # 建立索引：訂單編號必須唯一
-    add_index :orders, :order_number, unique: true
+    add_index :orders, :order_number, unique: true unless index_exists?(:orders, :order_number)
     # 建立索引：用於查詢特定狀態的訂單
-    add_index :orders, :status
+    add_index :orders, :status unless index_exists?(:orders, :status)
     # 建立索引：用於查詢特定租戶的訂單（多租戶隔離）
-    add_index :orders, :tenant_id
+    add_index :orders, :tenant_id unless index_exists?(:orders, :tenant_id)
     # 建立索引：用於查詢特定商店的訂單
-    add_index :orders, :shop_id
+    add_index :orders, :shop_id unless index_exists?(:orders, :shop_id)
   end
 end
 

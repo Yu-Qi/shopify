@@ -3,8 +3,8 @@
 # 在多租戶場景下，確保租戶資料的正確建立和管理
 
 class TenantService < ApplicationService
-  def initialize(user, params)
-    @user = user
+  def initialize(seller_profile, params)
+    @seller_profile = seller_profile
     @params = params
   end
 
@@ -12,8 +12,9 @@ class TenantService < ApplicationService
   def call
     # 使用 transaction 確保資料一致性
     ActiveRecord::Base.transaction do
-      # 建立租戶
-      tenant = @user.tenants.build(@params)
+      ActsAsTenant.current_tenant = nil
+
+      tenant = @seller_profile.tenants.build(@params)
       
       # 驗證並儲存
       if tenant.save
@@ -22,18 +23,22 @@ class TenantService < ApplicationService
         default_shop = tenant.shops.create!(
           name: "#{tenant.name} 主商店",
           description: "預設商店",
-          status: 'active'
+          status: Shop::STATUS_ACTIVE
         )
         
         success({ tenant: tenant, default_shop: default_shop })
       else
-        failure(tenant.errors.full_messages)
+        failure(tenant.errors.full_messages, code: ErrorCodes::Tenant::VALIDATION_FAILED)
       end
     end
   rescue StandardError => e
     # 錯誤處理：記錄錯誤並回傳失敗訊息
     Rails.logger.error("TenantService error: #{e.message}")
-    failure(["建立租戶時發生錯誤：#{e.message}"], status: :internal_server_error)
+    failure(
+      ["建立租戶時發生錯誤：#{e.message}"],
+      status: :internal_server_error,
+      code: ErrorCodes::Tenant::UNEXPECTED_ERROR
+    )
   end
 end
 

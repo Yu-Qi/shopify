@@ -14,11 +14,11 @@ class CreateOrderItems < ActiveRecord::Migration[7.1]
     end
 
     # 建立索引：用於查詢特定租戶的訂單項目（多租戶隔離）
-    add_index :order_items, :tenant_id
+    add_index :order_items, :tenant_id unless index_exists?(:order_items, :tenant_id)
     # 建立索引：用於查詢特定訂單的訂單項目
-    add_index :order_items, :order_id
+    add_index :order_items, :order_id unless index_exists?(:order_items, :order_id)
     # 建立索引：用於查詢特定商品的訂單項目
-    add_index :order_items, :product_id
+    add_index :order_items, :product_id unless index_exists?(:order_items, :product_id)
   end
 end
 

@@ -21,12 +21,16 @@ class ShopService < ApplicationService
       if shop.save
         success(shop)
       else
-        failure(shop.errors.full_messages)
+        failure(shop.errors.full_messages, code: ErrorCodes::Shop::VALIDATION_FAILED)
       end
     end
   rescue StandardError => e
     Rails.logger.error("ShopService error: #{e.message}")
-    failure(["建立商店時發生錯誤：#{e.message}"], status: :internal_server_error)
+    failure(
+      ["建立商店時發生錯誤：#{e.message}"],
+      status: :internal_server_error,
+      code: ErrorCodes::Shop::UNEXPECTED_ERROR
+    )
   end
 end
 

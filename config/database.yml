@@ -10,17 +10,21 @@ default: &default
   host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
 
 development:
-  <<: *default
-  database: shopify_rails_development
+  primary:
+    <<: *default
+    database: shopify_rails_development
 
 test:
-  <<: *default
-  database: shopify_rails_test
+  primary:
+    adapter: sqlite3
+    database: db/test.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 production:
-  <<: *default
-  database: shopify_rails_production
-  username: <%= ENV["DATABASE_USERNAME"] %>
-  password: <%= ENV["DATABASE_PASSWORD"] %>
-  host: <%= ENV["DATABASE_HOST"] %>
+  primary:
+    <<: *default
+    database: shopify_rails_production
+    username: <%= ENV["DATABASE_USERNAME"] %>
+    password: <%= ENV["DATABASE_PASSWORD"] %>
+    host: <%= ENV["DATABASE_HOST"] %>
 

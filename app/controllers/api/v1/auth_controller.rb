@@ -6,7 +6,7 @@ module Api
   module V1
     class AuthController < ApplicationController
       # 跳過認證檢查（因為這是認證端點）
-      skip_before_action :authenticate_user!, only: [:login, :register]
+      skip_before_action :authenticate_user!, only: [:login, :register], raise: false
 
       # 用戶註冊
       def register

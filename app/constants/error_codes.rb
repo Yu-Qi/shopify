@@ -1,0 +1,42 @@
+module ErrorCodes
+  module Order
+    SHOP_NOT_READY = 10001
+    INVENTORY_NOT_AVAILABLE = 10002
+    VALIDATION_FAILED = 10003
+    UNEXPECTED_ERROR = 10099
+
+    module Cancellation
+      INVALID_STATE = 11001
+      UNEXPECTED_ERROR = 11099
+    end
+
+    module Completion
+      INVALID_STATE = 12001
+      UNEXPECTED_ERROR = 12099
+    end
+
+    module Payment
+      ALREADY_PAID = 13001
+      INVALID_STATE = 13002
+      UNAUTHORIZED = 13003
+      INVALID_AMOUNT = 13004
+      UNEXPECTED_ERROR = 13099
+    end
+  end
+
+  module Tenant
+    VALIDATION_FAILED = 20001
+    UNEXPECTED_ERROR = 20099
+  end
+
+  module Shop
+    VALIDATION_FAILED = 21001
+    UNEXPECTED_ERROR = 21099
+  end
+
+  module Product
+    VALIDATION_FAILED = 22001
+    UNEXPECTED_ERROR = 22099
+  end
+end
+

@@ -22,12 +22,16 @@ class ProductService < ApplicationService
       if product.save
         success(product)
       else
-        failure(product.errors.full_messages)
+        failure(product.errors.full_messages, code: ErrorCodes::Product::VALIDATION_FAILED)
       end
     end
   rescue StandardError => e
     Rails.logger.error("ProductService error: #{e.message}")
-    failure(["建立商品時發生錯誤：#{e.message}"], status: :internal_server_error)
+    failure(
+      ["建立商品時發生錯誤：#{e.message}"],
+      status: :internal_server_error,
+      code: ErrorCodes::Product::UNEXPECTED_ERROR
+    )
   end
 end
 

@@ -23,19 +23,25 @@ class Shop < ApplicationRecord
   # 驗證：商店名稱在同一個租戶下必須唯一
   validates :name, uniqueness: { scope: :tenant_id }
 
-  # 驗證：狀態必須是有效的值
-  validates :status, inclusion: { in: %w[active inactive suspended] }
-
-  # 預設狀態為 active
-  enum status: {
+  STATUSES = {
     active: 'active',      # 正常營運
     inactive: 'inactive',  # 未啟用
     suspended: 'suspended' # 暫停營運
-  }
+  }.freeze
+
+  STATUS_ACTIVE    = STATUSES[:active]
+  STATUS_INACTIVE  = STATUSES[:inactive]
+  STATUS_SUSPENDED = STATUSES[:suspended]
+
+  # 驗證：狀態必須是有效的值
+  validates :status, inclusion: { in: STATUSES.values }
+
+  # 預設狀態為 active
+  enum status: STATUSES
 
   # 檢查商店是否可以接收訂單
   def can_receive_orders?
-    active? && status == 'active'
+    status == STATUS_ACTIVE
   end
 end
 

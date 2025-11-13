@@ -7,15 +7,16 @@ class Tenant < ApplicationRecord
   # 注意：Tenant 本身不是 tenant，它是租戶本身
   # 不需要設定 acts_as_tenant，因為它本身就是租戶
 
-  # 關聯：一個租戶屬於一個用戶
-  belongs_to :user
+  # 關聯：一個租戶屬於一個店家檔案
+  belongs_to :seller_profile
+  delegate :user, to: :seller_profile
 
   # 關聯：一個租戶可以有多個商店
   # 例如：一個電商平台可能有多個分店或品牌
   has_many :shops, dependent: :destroy
 
   # 驗證：租戶名稱必須存在且唯一（在同一個用戶下）
-  validates :name, presence: true, uniqueness: { scope: :user_id }
+  validates :name, presence: true, uniqueness: { scope: :seller_profile_id }
 
   # 驗證：domain 必須唯一（如果有的話）
   validates :domain, uniqueness: true, allow_nil: true

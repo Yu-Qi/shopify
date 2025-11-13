@@ -17,11 +17,11 @@ class CreateProducts < ActiveRecord::Migration[7.1]
     end
 
     # 建立索引：確保商品編號在同一個商店內唯一
-    add_index :products, [:shop_id, :sku], unique: true
+    add_index :products, [:shop_id, :sku], unique: true unless index_exists?(:products, [:shop_id, :sku])
     # 建立索引：用於查詢特定狀態的商品
-    add_index :products, :status
+    add_index :products, :status unless index_exists?(:products, :status)
     # 建立索引：用於查詢特定租戶的商品（多租戶隔離）
-    add_index :products, :tenant_id
+    add_index :products, :tenant_id unless index_exists?(:products, :tenant_id)
   end
 end
 

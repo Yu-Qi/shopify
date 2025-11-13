@@ -7,6 +7,9 @@ Rails.application.routes.draw do
       post 'auth/register', to: 'auth#register'
       post 'auth/logout', to: 'auth#logout'
 
+      resource :seller_profile, only: [:show, :create, :destroy]
+      resource :buyer_profile, only: [:show, :create, :destroy]
+
       # 租戶管理（用戶可以建立和管理自己的電商）
       resources :tenants, only: [:create, :show, :update, :destroy] do
         # 商店管理（每個租戶可以有多個商店）
@@ -27,6 +30,8 @@ Rails.application.routes.draw do
       # 當前用戶資訊
       get 'me', to: 'users#me'
       get 'my-tenants', to: 'tenants#my_tenants'
+
+      post 'orders/:order_id/payments', to: 'payments#create'
     end
   end
 

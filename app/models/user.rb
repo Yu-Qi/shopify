@@ -6,9 +6,10 @@ class User < ApplicationRecord
   # 使用 bcrypt 加密密碼
   has_secure_password
 
-  # 關聯：一個用戶可以擁有多個租戶
-  # 例如：用戶 a 可以建立多個電商平台
-  has_many :tenants, dependent: :destroy
+  # 關聯：一個用戶可以擁有店家或買家資料
+  has_one :seller_profile, dependent: :destroy
+  has_one :buyer_profile, dependent: :destroy
+  has_many :tenants, through: :seller_profile
 
   # 驗證：email 必須存在且唯一
   validates :email, presence: true, uniqueness: true
@@ -16,6 +17,14 @@ class User < ApplicationRecord
 
   # 驗證：名稱必須存在
   validates :name, presence: true
+
+  def seller?
+    seller_profile.present?
+  end
+
+  def buyer?
+    buyer_profile.present?
+  end
 
   # 生成 JWT token 的方法
   # 用於 API 認證

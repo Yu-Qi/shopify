@@ -30,10 +30,10 @@ RSpec.describe "API::V1::Orders", type: :request do
     allow(User).to receive(:from_token).and_return(user)
   end
 
-  describe "POST /api/v1/tenants/:tenant_id/shops/:shop_id/orders" do
+  describe "POST /api/v1/shops/:shop_id/orders" do
     it "creates a new order and responds with order details" do
       expect do
-        post api_v1_tenant_shop_orders_path(tenant_id: tenant.id, shop_id: shop.id),
+        post api_v1_shop_orders_path(shop_id: shop.id),
              params: order_params.to_json,
              headers: headers
       end.to change(Order, :count).by(1)
@@ -48,7 +48,7 @@ RSpec.describe "API::V1::Orders", type: :request do
     it "returns validation errors when payload invalid" do
       invalid_params = order_params.deep_merge(order: { order_items: [{ product_id: product.id, quantity: 0 }] })
 
-      post api_v1_tenant_shop_orders_path(tenant_id: tenant.id, shop_id: shop.id),
+      post api_v1_shop_orders_path(shop_id: shop.id),
            params: invalid_params.to_json,
            headers: headers
 
@@ -58,13 +58,13 @@ RSpec.describe "API::V1::Orders", type: :request do
     end
   end
 
-  describe "PATCH /api/v1/tenants/:tenant_id/shops/:shop_id/orders/:id/cancel" do
+  describe "PATCH /api/v1/shops/:shop_id/orders/:id/cancel" do
     it "cancels an existing order and restores inventory" do
       order = create(:order, shop: shop, status: Order::STATUS_PENDING)
       item = order.order_items.first
       original_stock = item.product.stock_quantity
 
-      patch cancel_api_v1_tenant_shop_order_path(tenant_id: tenant.id, shop_id: shop.id, id: order.id),
+      patch cancel_api_v1_shop_order_path(shop_id: shop.id, id: order.id),
             headers: headers
 
       expect(response).to have_http_status(:ok)

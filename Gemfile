@@ -5,6 +5,7 @@ ruby '3.3.4'
 
 # Rails 核心框架
 gem 'rails', '~> 7.1.0'
+gem 'puma', '~> 6.6'
 
 # 啟動效能
 gem 'bootsnap', require: false

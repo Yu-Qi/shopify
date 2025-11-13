@@ -11,18 +11,18 @@ Rails.application.routes.draw do
       resource :buyer_profile, only: [:show, :create, :destroy]
 
       # 租戶管理（用戶可以建立和管理自己的電商）
-      resources :tenants, only: [:create, :show, :update, :destroy] do
-        # 商店管理（每個租戶可以有多個商店）
-        resources :shops, only: [:index, :create, :show, :update, :destroy] do
-          # 商品管理
-          resources :products, only: [:index, :create, :show, :update, :destroy]
-          
-          # 訂單管理
-          resources :orders, only: [:index, :create, :show, :update] do
-            member do
-              patch :cancel  # 取消訂單
-              patch :complete  # 完成訂單
-            end
+      resources :tenants, only: [:create, :show, :update, :destroy]
+
+      # 商店管理（由 token 判斷租戶）
+      resources :shops, only: [:index, :create, :show, :update, :destroy] do
+        # 商品管理
+        resources :products, only: [:index, :create, :show, :update, :destroy]
+
+        # 訂單管理
+        resources :orders, only: [:index, :create, :show, :update] do
+          member do
+            patch :cancel  # 取消訂單
+            patch :complete  # 完成訂單
           end
         end
       end

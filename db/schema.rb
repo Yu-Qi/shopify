@@ -11,8 +11,11 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "buyer_profiles", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "display_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -20,9 +23,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
   end
 
   create_table "order_items", force: :cascade do |t|
-    t.integer "tenant_id", null: false
-    t.integer "order_id", null: false
-    t.integer "product_id", null: false
+    t.bigint "tenant_id", null: false
+    t.bigint "order_id", null: false
+    t.bigint "product_id", null: false
     t.integer "quantity", null: false
     t.decimal "price", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -33,8 +36,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
   end
 
   create_table "orders", force: :cascade do |t|
-    t.integer "tenant_id", null: false
-    t.integer "shop_id", null: false
+    t.bigint "tenant_id", null: false
+    t.bigint "shop_id", null: false
     t.string "order_number", null: false
     t.string "customer_name", null: false
     t.string "customer_email", null: false
@@ -43,7 +46,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
     t.string "status", default: "pending"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "buyer_profile_id"
+    t.bigint "buyer_profile_id"
     t.index ["buyer_profile_id"], name: "index_orders_on_buyer_profile_id"
     t.index ["order_number"], name: "index_orders_on_order_number", unique: true
     t.index ["shop_id"], name: "index_orders_on_shop_id"
@@ -52,13 +55,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
   end
 
   create_table "payments", force: :cascade do |t|
-    t.integer "order_id", null: false
-    t.integer "buyer_profile_id", null: false
+    t.bigint "order_id", null: false
+    t.bigint "buyer_profile_id", null: false
     t.decimal "amount", precision: 12, scale: 2, null: false
     t.string "status", default: "pending", null: false
     t.string "payment_method"
     t.string "transaction_reference"
-    t.json "metadata", default: {}
+    t.jsonb "metadata", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["buyer_profile_id"], name: "index_payments_on_buyer_profile_id"
@@ -67,8 +70,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
   end
 
   create_table "products", force: :cascade do |t|
-    t.integer "tenant_id", null: false
-    t.integer "shop_id", null: false
+    t.bigint "tenant_id", null: false
+    t.bigint "shop_id", null: false
     t.string "name", null: false
     t.text "description"
     t.decimal "price", precision: 10, scale: 2, null: false
@@ -78,13 +81,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["shop_id", "sku"], name: "index_products_on_shop_id_and_sku", unique: true
-    t.index ["shop_id"], name: "index_products_on_shop_id"
     t.index ["status"], name: "index_products_on_status"
     t.index ["tenant_id"], name: "index_products_on_tenant_id"
   end
 
   create_table "seller_profiles", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "display_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -92,7 +94,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
   end
 
   create_table "shops", force: :cascade do |t|
-    t.integer "tenant_id", null: false
+    t.bigint "tenant_id", null: false
     t.string "name", null: false
     t.text "description"
     t.string "status", default: "active"
@@ -100,7 +102,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
     t.datetime "updated_at", null: false
     t.index ["status"], name: "index_shops_on_status"
     t.index ["tenant_id", "name"], name: "index_shops_on_tenant_id_and_name", unique: true
-    t.index ["tenant_id"], name: "index_shops_on_tenant_id"
   end
 
   create_table "tenants", force: :cascade do |t|
@@ -110,9 +111,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_13_001400) do
     t.string "domain"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "seller_profile_id", null: false
+    t.bigint "seller_profile_id", null: false
     t.index ["domain"], name: "index_tenants_on_domain", unique: true
-    t.index ["name"], name: "index_tenants_on_user_id_and_name", unique: true
     t.index ["seller_profile_id"], name: "index_tenants_on_seller_profile_id"
     t.index ["subdomain"], name: "index_tenants_on_subdomain", unique: true
   end

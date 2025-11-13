@@ -33,6 +33,10 @@ module ShopifyRails
     # 多租戶相關設定
     # 設定 acts_as_tenant 的 require_tenant 為 false，允許在沒有 tenant 的情況下也能運作
     config.acts_as_tenant_require_tenant = false
+
+    # 自動載入 app/constants 內的常數模組
+    config.autoload_paths << Rails.root.join('app', 'constants')
+    config.eager_load_paths << Rails.root.join('app', 'constants')
   end
 end
 

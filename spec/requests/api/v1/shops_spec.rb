@@ -16,11 +16,11 @@ RSpec.describe "API::V1::Shops", type: :request do
     allow(User).to receive(:from_token).and_return(user)
   end
 
-  describe "GET /api/v1/tenants/:tenant_id/shops" do
+  describe "GET /api/v1/shops" do
     it "回傳商店列表" do
       create_list(:shop, 2, tenant: tenant)
 
-      get api_v1_tenant_shops_path(tenant_id: tenant.id), headers: headers
+      get api_v1_shops_path, headers: headers
 
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
@@ -28,7 +28,7 @@ RSpec.describe "API::V1::Shops", type: :request do
     end
   end
 
-  describe "POST /api/v1/tenants/:tenant_id/shops" do
+  describe "POST /api/v1/shops" do
     it "成功建立商店" do
       payload = {
         shop: {
@@ -39,7 +39,7 @@ RSpec.describe "API::V1::Shops", type: :request do
       }
 
       expect do
-        post api_v1_tenant_shops_path(tenant_id: tenant.id), params: payload.to_json, headers: headers
+        post api_v1_shops_path, params: payload.to_json, headers: headers
       end.to change(Shop, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -48,7 +48,7 @@ RSpec.describe "API::V1::Shops", type: :request do
     end
 
     it "當參數無效時回傳錯誤" do
-      post api_v1_tenant_shops_path(tenant_id: tenant.id),
+      post api_v1_shops_path,
            params: { shop: { name: "" } }.to_json,
            headers: headers
 
@@ -58,11 +58,11 @@ RSpec.describe "API::V1::Shops", type: :request do
     end
   end
 
-  describe "PATCH /api/v1/tenants/:tenant_id/shops/:id" do
+  describe "PATCH /api/v1/shops/:id" do
     it "成功更新商店資訊" do
       shop = create(:shop, tenant: tenant, name: "舊名稱")
 
-      patch api_v1_tenant_shop_path(tenant_id: tenant.id, id: shop.id),
+      patch api_v1_shop_path(id: shop.id),
             params: { shop: { name: "新名稱" } }.to_json,
             headers: headers
 
@@ -71,11 +71,11 @@ RSpec.describe "API::V1::Shops", type: :request do
     end
   end
 
-  describe "DELETE /api/v1/tenants/:tenant_id/shops/:id" do
+  describe "DELETE /api/v1/shops/:id" do
     it "成功刪除商店" do
       shop = create(:shop, tenant: tenant)
 
-      delete api_v1_tenant_shop_path(tenant_id: tenant.id, id: shop.id), headers: headers
+      delete api_v1_shop_path(id: shop.id), headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(Shop.exists?(shop.id)).to be(false)

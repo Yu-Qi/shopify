@@ -7,7 +7,6 @@ module Api
     class ProductsController < ApplicationController
       before_action :authenticate_user!
       before_action :require_seller_profile!
-      before_action :set_tenant
       before_action :set_shop
       before_action :set_product, only: [:show, :update, :destroy]
 
@@ -54,24 +53,16 @@ module Api
 
       private
 
-      def set_tenant
-        # 確保只能存取自己的租戶
-        @tenant = current_seller_profile.tenants.find_by(id: params[:tenant_id])
-        unless @tenant
-          render json: { error: '租戶不存在或無權限存取' }, status: :not_found
-          return false
-        end
-        # 設定當前租戶（確保 acts_as_tenant 正確運作）
-        ActsAsTenant.current_tenant = @tenant
-      end
-
       def set_shop
-        # 確保商店屬於當前租戶
-        @shop = @tenant.shops.find_by(id: params[:shop_id])
+        # 確保商店屬於目前使用者的租戶
+        @shop = Shop.joins(:tenant)
+                    .where(id: params[:shop_id], tenants: { seller_profile_id: current_seller_profile.id })
+                    .first
         unless @shop
           render json: { error: '商店不存在或無權限存取' }, status: :not_found
           return false
         end
+        ActsAsTenant.current_tenant = @shop.tenant
       end
 
       def set_product

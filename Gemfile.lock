@@ -205,6 +205,8 @@ GEM
     psych (5.2.6)
       date
       stringio
+    puma (6.6.1)
+      nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.4)
     rack-cors (3.0.0)
@@ -333,6 +335,7 @@ DEPENDENCIES
   lograge
   pg (~> 1.5)
   pry-rails
+  puma (~> 6.6)
   rack-cors
   rails (~> 7.1.0)
   redis

@@ -1,4 +1,12 @@
 module ErrorCodes
+  module Authentication
+    UNAUTHORIZED = 1001
+    INVALID_TOKEN = 1002
+    EXPIRED_TOKEN = 1003
+    INVALID_CREDENTIALS = 1004
+    UNEXPECTED_ERROR = 1099
+  end
+
   module Order
     SHOP_NOT_READY = 10001
     INVENTORY_NOT_AVAILABLE = 10002

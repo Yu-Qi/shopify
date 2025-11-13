@@ -2,6 +2,48 @@
 
 這是一個基於 Ruby on Rails 的多租戶電商系統，支援多個用戶（用戶 a, b, c 等）透過系統建立自己的電商平台和訂單管理。
 
+## 如何執行（Getting Started）
+
+### 使用 Docker 快速啟動
+
+1. 建置服務映像檔：
+   ```bash
+   docker compose build
+   ```
+2. 啟動所有服務（Rails、PostgreSQL、Redis、Sidekiq）：
+   ```bash
+   docker compose up -d
+   ```
+3. 初次啟動會自動執行 `bundle exec rails db:prepare`，如需填充測試資料可額外執行：
+   ```bash
+   docker compose run --rm web bundle exec rails db:seed
+   ```
+4. 監看服務日誌（選擇性）：
+   ```bash
+   docker compose logs -f web
+   ```
+5. 停止並移除容器：
+   ```bash
+   docker compose down
+   ```
+- 更新程式碼
+```bash
+docker compose exec web bundle exec rails db:migrate
+docker compose exec web bundle exec rails db:seed
+docker compose restart web
+```
+
+應用程式預設會在 `http://localhost:3000` 提供服務，PostgreSQL 可透過 `localhost:5432` 連線。若需要進入 Rails 容器，可使用：
+```bash
+docker compose exec web bash
+```
+
+### 常用 Docker 指令
+
+- `docker compose exec web bundle exec rails console`：開啟 Rails Console
+- `docker compose exec web bundle exec rails db:migrate`：執行資料庫遷移
+- `docker compose logs sidekiq`：即時查看 Sidekiq 背景任務日誌
+
 ## 專案架構
 
 ### 多租戶架構
@@ -20,143 +62,6 @@
 - 使用 `acts_as_tenant` 自動在所有查詢中加入 `tenant_id` 條件
 - 確保資料安全性和穩定性
 
-## 環境需求
-
-- Ruby 3.3.4（或 3.2.2+）
-- PostgreSQL 12+
-- Redis 6+（用於 Sidekiq 背景任務）
-- Bundler
-
-## 安裝步驟
-
-### 1. 安裝 Ruby 和 PostgreSQL
-
-#### macOS（使用 Homebrew）：
-```bash
-# 安裝 Ruby（建議使用 rbenv 或 rvm）
-brew install rbenv
-rbenv install 3.3.4
-rbenv global 3.3.4
-
-# 安裝 PostgreSQL
-brew install postgresql@14
-brew services start postgresql@14
-
-# 安裝 Redis
-brew install redis
-brew services start redis
-```
-
-#### Linux（Ubuntu/Debian）：
-```bash
-# 安裝 Ruby（建議使用 rbenv）
-sudo apt update
-sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev
-curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
-rbenv install 3.3.4
-rbenv global 3.3.4
-
-# 安裝 PostgreSQL
-sudo apt install -y postgresql postgresql-contrib
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# 安裝 Redis
-sudo apt install -y redis-server
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
-```
-
-### 2. 建立專案資料夾結構
-
-專案已經建立好所有必要的資料夾結構，如果需要在新的位置建立，請執行：
-
-```bash
-# 建立專案資料夾
-mkdir -p shopify
-cd shopify
-
-# 如果需要重新初始化 Rails 專案（不建議，因為已經有完整結構）
-# rails new . --database=postgresql --api
-```
-
-### 3. 安裝套件
-
-```bash
-# 安裝 Bundler（如果還沒安裝）
-gem install bundler
-
-# 安裝所有 gem 套件
-bundle install
-```
-
-### 4. 設定資料庫
-
-```bash
-# 建立 PostgreSQL 資料庫用戶（如果還沒建立）
-# macOS/Linux:
-sudo -u postgres createuser -s $USER
-# 或手動建立：
-# sudo -u postgres psql
-# CREATE USER your_username WITH PASSWORD 'your_password';
-# ALTER USER your_username CREATEDB;
-
-# 設定環境變數（可選）
-cp .env.example .env
-# 編輯 .env 檔案，填入資料庫設定
-
-# 建立資料庫
-rails db:create
-
-# 執行資料庫遷移
-rails db:migrate
-
-# 如果需要填充測試資料（可選）
-rails db:seed
-```
-
-### 5. 設定 Rails 密鑰
-
-```bash
-# 生成 secret key base
-rails secret
-
-# 設定環境變數
-export SECRET_KEY_BASE=your-generated-secret-key-base
-
-# 或編輯 .env 檔案，加入：
-# SECRET_KEY_BASE=your-generated-secret-key-base
-```
-
-### 6. 啟動服務
-
-#### 啟動 Rails 伺服器：
-
-```bash
-# 開發環境
-rails server
-# 或
-rails s
-
-# 預設會在 http://localhost:3000 啟動
-```
-
-#### 啟動 Sidekiq（背景任務處理）：
-
-```bash
-# 在另一個終端視窗執行
-bundle exec sidekiq
-```
-
-#### 啟動 Redis（如果還沒啟動）：
-
-```bash
-# macOS（使用 Homebrew）
-brew services start redis
-
-# Linux
-sudo systemctl start redis-server
-```
 
 ## 專案結構說明
 
@@ -217,38 +122,51 @@ shopify/
 - `GET /api/v1/me` - 取得當前用戶資訊
 - `GET /api/v1/my-tenants` - 取得當前用戶的所有租戶
 
+### 店家 / 買家資料
+
+- `GET /api/v1/seller_profile` - 檢視當前使用者的店家資料
+- `POST /api/v1/seller_profile` - 建立店家資料
+- `DELETE /api/v1/seller_profile` - 刪除店家資料
+- `GET /api/v1/buyer_profile` - 檢視當前使用者的買家資料
+- `POST /api/v1/buyer_profile` - 建立買家資料
+- `DELETE /api/v1/buyer_profile` - 刪除買家資料
+
 ### 租戶相關
 
-- `GET /api/v1/tenants` - 取得所有租戶（當前用戶的）
 - `POST /api/v1/tenants` - 建立新租戶
 - `GET /api/v1/tenants/:id` - 取得單一租戶
 - `PATCH /api/v1/tenants/:id` - 更新租戶
 - `DELETE /api/v1/tenants/:id` - 刪除租戶
+- `GET /api/v1/my-tenants` - 取得當前用戶的所有租戶
 
 ### 商店相關
 
-- `GET /api/v1/tenants/:tenant_id/shops` - 取得租戶的所有商店
-- `POST /api/v1/tenants/:tenant_id/shops` - 建立新商店
-- `GET /api/v1/tenants/:tenant_id/shops/:id` - 取得單一商店
-- `PATCH /api/v1/tenants/:tenant_id/shops/:id` - 更新商店
-- `DELETE /api/v1/tenants/:tenant_id/shops/:id` - 刪除商店
+- `GET /api/v1/shops` - 取得租戶的所有商店（依據 token 判斷租戶）
+- `POST /api/v1/shops` - 建立新商店
+- `GET /api/v1/shops/:id` - 取得單一商店
+- `PATCH /api/v1/shops/:id` - 更新商店
+- `DELETE /api/v1/shops/:id` - 刪除商店
 
 ### 商品相關
 
-- `GET /api/v1/tenants/:tenant_id/shops/:shop_id/products` - 取得商店的所有商品
-- `POST /api/v1/tenants/:tenant_id/shops/:shop_id/products` - 建立新商品
-- `GET /api/v1/tenants/:tenant_id/shops/:shop_id/products/:id` - 取得單一商品
-- `PATCH /api/v1/tenants/:tenant_id/shops/:shop_id/products/:id` - 更新商品
-- `DELETE /api/v1/tenants/:tenant_id/shops/:shop_id/products/:id` - 刪除商品
+- `GET /api/v1/shops/:shop_id/products` - 取得商店的所有商品
+- `POST /api/v1/shops/:shop_id/products` - 建立新商品
+- `GET /api/v1/shops/:shop_id/products/:id` - 取得單一商品
+- `PATCH /api/v1/shops/:shop_id/products/:id` - 更新商品
+- `DELETE /api/v1/shops/:shop_id/products/:id` - 刪除商品
 
 ### 訂單相關
 
-- `GET /api/v1/tenants/:tenant_id/shops/:shop_id/orders` - 取得商店的所有訂單
-- `POST /api/v1/tenants/:tenant_id/shops/:shop_id/orders` - 建立新訂單
-- `GET /api/v1/tenants/:tenant_id/shops/:shop_id/orders/:id` - 取得單一訂單
-- `PATCH /api/v1/tenants/:tenant_id/shops/:shop_id/orders/:id` - 更新訂單
-- `PATCH /api/v1/tenants/:tenant_id/shops/:shop_id/orders/:id/cancel` - 取消訂單
-- `PATCH /api/v1/tenants/:tenant_id/shops/:shop_id/orders/:id/complete` - 完成訂單
+- `GET /api/v1/shops/:shop_id/orders` - 取得商店的所有訂單
+- `POST /api/v1/shops/:shop_id/orders` - 建立新訂單
+- `GET /api/v1/shops/:shop_id/orders/:id` - 取得單一訂單
+- `PATCH /api/v1/shops/:shop_id/orders/:id` - 更新訂單
+- `PATCH /api/v1/shops/:shop_id/orders/:id/cancel` - 取消訂單
+- `PATCH /api/v1/shops/:shop_id/orders/:id/complete` - 完成訂單
+
+### 付款相關
+
+- `POST /api/v1/orders/:order_id/payments` - 建立訂單付款
 
 ### 健康檢查
 
@@ -306,7 +224,7 @@ curl -X POST http://localhost:3000/api/v1/tenants \
 ### 4. 建立商店
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/tenants/1/shops \
+curl -X POST http://localhost:3000/api/v1/shops \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -320,7 +238,7 @@ curl -X POST http://localhost:3000/api/v1/tenants/1/shops \
 ### 5. 建立商品
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/tenants/1/shops/1/products \
+curl -X POST http://localhost:3000/api/v1/shops/1/products \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -334,10 +252,46 @@ curl -X POST http://localhost:3000/api/v1/tenants/1/shops/1/products \
   }'
 ```
 
-### 6. 建立訂單
+### 6. 建立店家 / 買家資料
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/tenants/1/shops/1/orders \
+# 建立店家資料
+curl -X POST http://localhost:3000/api/v1/seller_profile \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "seller_profile": {
+      "display_name": "用戶 A 的商家"
+    }
+  }'
+
+# 建立買家資料
+curl -X POST http://localhost:3000/api/v1/buyer_profile \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "buyer_profile": {
+      "display_name": "用戶 A 的買家"
+    }
+  }'
+```
+
+### 7. 取得當前用戶資訊 / 租戶列表
+
+```bash
+# 取得當前用戶資訊
+curl -X GET http://localhost:3000/api/v1/me \
+  -H "Authorization: Bearer <token>"
+
+# 取得當前用戶擁有的租戶列表
+curl -X GET http://localhost:3000/api/v1/my-tenants \
+  -H "Authorization: Bearer <token>"
+```
+
+### 8. 建立訂單
+
+```bash
+curl -X POST http://localhost:3000/api/v1/shops/1/orders \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -353,6 +307,36 @@ curl -X POST http://localhost:3000/api/v1/tenants/1/shops/1/orders \
       ]
     }
   }'
+```
+
+### 9. 訂單付款
+
+```bash
+curl -X POST http://localhost:3000/api/v1/orders/1/payments \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <buyer_token>" \
+  -d '{
+    "payment": {
+      "amount": "200.00",
+      "payment_method": "credit_card",
+      "transaction_reference": "TXN-20250101-0001",
+      "metadata": {
+        "gateway": "TestPay"
+      }
+    }
+  }'
+```
+
+### 10. 取消 / 完成訂單
+
+```bash
+# 取消訂單
+curl -X PATCH http://localhost:3000/api/v1/shops/1/orders/1/cancel \
+  -H "Authorization: Bearer <token>"
+
+# 完成訂單
+curl -X PATCH http://localhost:3000/api/v1/shops/1/orders/1/complete \
+  -H "Authorization: Bearer <token>"
 ```
 
 ## 架構設計說明
@@ -382,13 +366,30 @@ curl -X POST http://localhost:3000/api/v1/tenants/1/shops/1/orders \
 ### 資料庫交易
 
 複雜的業務邏輯（如訂單建立、取消）都使用 `ActiveRecord::Base.transaction` 確保資料一致性：
-- 訂單建立時，庫存扣減和訂單建立必須要麼全部成功，要麼全部失敗
-- 訂單取消時，庫存回退和訂單狀態更新必須要麼全部成功，要麼全部失敗
+- 訂單建立時，庫存扣減和訂單建立必須全部成功，否則全部失敗
+- 訂單取消時，庫存回退和訂單狀態更新必須全部成功，否則全部失敗
 
 ### 錯誤處理
 
 - 在 Controller 中使用 `rescue_from` 統一處理錯誤
 - 在 Service Objects 中使用 `begin/rescue` 處理錯誤並回傳統一的錯誤格式
+
+
+## 常見問題
+
+### Q: 如何確保多租戶資料隔離？
+
+A: 使用 `acts_as_tenant` gem，所有查詢都會自動加入 `tenant_id` 條件。在 Controller 中透過 `set_current_tenant` 設定當前租戶。
+
+### Q: 訂單建立時如何確保庫存正確扣減？
+
+A: 使用 `ActiveRecord::Base.transaction` 確保訂單建立和庫存扣減的原子性。如果其中任何一步失敗，整個交易會回滾。
+
+### Q: 如何處理併發訂單？
+
+A: 使用資料庫交易和原子操作（如 `update_column`）來確保併發安全。並且在庫存操作時使用鎖定（如 `lock!`）來確保併發安全。
+
+
 
 ## 開發工具
 
@@ -445,21 +446,6 @@ rails db:migrate:status
 
 4. 設定 Sidekiq：
    確保 Redis 服務正常運行
-
-## 常見問題
-
-### Q: 如何確保多租戶資料隔離？
-
-A: 使用 `acts_as_tenant` gem，所有查詢都會自動加入 `tenant_id` 條件。在 Controller 中透過 `set_current_tenant` 設定當前租戶。
-
-### Q: 訂單建立時如何確保庫存正確扣減？
-
-A: 使用 `ActiveRecord::Base.transaction` 確保訂單建立和庫存扣減的原子性。如果其中任何一步失敗，整個交易會回滾。
-
-### Q: 如何處理併發訂單？
-
-A: 使用資料庫交易和原子操作（如 `update_column`）來確保併發安全。
-
 
 ## 套件選用
 

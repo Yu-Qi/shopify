@@ -21,7 +21,7 @@ class ApplicationController < ActionController::API
 
   # 檢查用戶是否已登入
   def authenticate_user!
-    render json: { error: '未授權' }, status: :unauthorized unless current_user
+    render json: { error: '未授權', error_code: ::ErrorCodes::Authentication::UNAUTHORIZED }, status: :unauthorized unless current_user
   end
 
   def current_seller_profile
@@ -55,14 +55,18 @@ class ApplicationController < ActionController::API
   # 設定當前租戶
   # 從請求參數或 headers 中取得租戶資訊
   def set_current_tenant
-    tenant_id = params[:tenant_id] || request.headers['X-Tenant-Id']
-    return unless tenant_id
-
     seller_profile = current_seller_profile
     return unless seller_profile
 
-    @current_tenant = seller_profile.tenants.find_by(id: tenant_id)
-    ActsAsTenant.current_tenant = @current_tenant
+    tenant_id = params[:tenant_id] || request.headers['X-Tenant-Id']
+    @current_tenant =
+      if tenant_id.present?
+        seller_profile.tenants.find_by(id: tenant_id)
+      else
+        seller_profile.tenants.first
+      end
+
+    ActsAsTenant.current_tenant = @current_tenant if @current_tenant
   end
 
   # 檢查租戶是否存在

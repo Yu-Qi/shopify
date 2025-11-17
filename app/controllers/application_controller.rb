@@ -38,7 +38,7 @@ class ApplicationController < ActionController::API
 
   def require_seller_profile!
     unless current_seller_profile
-      render json: { error: '需要店家資料' }, status: :forbidden
+      render json: { error: '需要店家資料', error_code: ::ErrorCodes::Authentication::FORBIDDEN }, status: :forbidden
       return false
     end
     true
@@ -46,7 +46,7 @@ class ApplicationController < ActionController::API
 
   def require_buyer_profile!
     unless current_buyer_profile
-      render json: { error: '需要買家資料' }, status: :forbidden
+      render json: { error: '需要買家資料', error_code: ::ErrorCodes::Authentication::FORBIDDEN }, status: :forbidden
       return false
     end
     true
@@ -73,7 +73,7 @@ class ApplicationController < ActionController::API
   def ensure_tenant!
     set_current_tenant
     unless @current_tenant
-      render json: { error: '租戶不存在或無權限存取' }, status: :not_found
+      render json: { error: '租戶不存在或無權限存取', error_code: ::ErrorCodes::Common::NOT_FOUND }, status: :not_found
       return false
     end
     true
@@ -83,17 +83,17 @@ class ApplicationController < ActionController::API
   def handle_error(exception)
     Rails.logger.error("Error: #{exception.class} - #{exception.message}")
     Rails.logger.error(exception.backtrace.join("\n"))
-    render json: { error: '伺服器錯誤' }, status: :internal_server_error
+    render json: { error: '伺服器錯誤', error_code: ::ErrorCodes::Common::INTERNAL_SERVER_ERROR }, status: :internal_server_error
   end
 
   # 找不到資源的錯誤處理
   def handle_not_found(exception)
-    render json: { error: '資源不存在' }, status: :not_found
+    render json: { error: '資源不存在', error_code: ::ErrorCodes::Common::NOT_FOUND }, status: :not_found
   end
 
   # 驗證錯誤處理
   def handle_validation_error(exception)
-    render json: { errors: exception.record.errors.full_messages }, status: :unprocessable_entity
+    render json: { errors: exception.record.errors.full_messages, error_code: ::ErrorCodes::Authentication::UNPROCESSABLE_ENTITY }, status: :unprocessable_entity
   end
 end
 

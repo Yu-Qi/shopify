@@ -1,10 +1,19 @@
 module ErrorCodes
+  module Common
+    INTERNAL_SERVER_ERROR = 100 
+    NOT_FOUND = 101
+    UNEXPECTED_ERROR = 199
+  end
+
   module Authentication
     UNAUTHORIZED = 1001
     INVALID_TOKEN = 1002
     EXPIRED_TOKEN = 1003
     INVALID_CREDENTIALS = 1004
-    UNEXPECTED_ERROR = 1099
+    FORBIDDEN = 1005
+    NOT_FOUND = 1006
+    UNPROCESSABLE_ENTITY = 1007
+    
   end
 
   module Order

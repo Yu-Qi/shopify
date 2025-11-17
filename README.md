@@ -1,6 +1,7 @@
 # Shopify 電商系統 - Ruby on Rails
 
 這是一個基於 Ruby on Rails 的多租戶電商系統，支援多個用戶（用戶 a, b, c 等）透過系統建立自己的電商平台和訂單管理。
+該項開發所花時間: 2天
 
 ## 如何執行（Getting Started）
 
@@ -207,7 +208,22 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 Authorization: Bearer <token>
 ```
 
-### 3. 建立租戶（電商平台）
+### 3. 建立店家資料
+
+在建立租戶之前，需要先建立店家資料（seller_profile）：
+
+```bash
+curl -X POST http://localhost:3000/api/v1/seller_profile \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "seller_profile": {
+      "display_name": "我的商店"
+    }
+  }'
+```
+
+### 4. 建立租戶（電商平台）
 
 ```bash
 curl -X POST http://localhost:3000/api/v1/tenants \
@@ -221,7 +237,7 @@ curl -X POST http://localhost:3000/api/v1/tenants \
   }'
 ```
 
-### 4. 建立商店
+### 5. 建立商店
 
 ```bash
 curl -X POST http://localhost:3000/api/v1/shops \
@@ -235,7 +251,7 @@ curl -X POST http://localhost:3000/api/v1/shops \
   }'
 ```
 
-### 5. 建立商品
+### 6. 建立商品
 
 ```bash
 curl -X POST http://localhost:3000/api/v1/shops/1/products \
@@ -252,20 +268,11 @@ curl -X POST http://localhost:3000/api/v1/shops/1/products \
   }'
 ```
 
-### 6. 建立店家 / 買家資料
+### 7. 建立買家資料（選用）
+
+如果需要以買家身份下單，可以建立買家資料：
 
 ```bash
-# 建立店家資料
-curl -X POST http://localhost:3000/api/v1/seller_profile \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{
-    "seller_profile": {
-      "display_name": "用戶 A 的商家"
-    }
-  }'
-
-# 建立買家資料
 curl -X POST http://localhost:3000/api/v1/buyer_profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
@@ -276,7 +283,7 @@ curl -X POST http://localhost:3000/api/v1/buyer_profile \
   }'
 ```
 
-### 7. 取得當前用戶資訊 / 租戶列表
+### 8. 取得當前用戶資訊 / 租戶列表
 
 ```bash
 # 取得當前用戶資訊

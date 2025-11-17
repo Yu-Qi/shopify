@@ -34,16 +34,28 @@ class User < ApplicationRecord
       user_id: id,
       exp: 24.hours.from_now.to_i  # 24 小時後過期
     }
-    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+    JWT.encode(payload, jwt_secret_key, 'HS256')
   end
 
   # 從 token 解析用戶
   # 靜態方法，用於從請求中的 token 找到對應用戶
   def self.from_token(token)
-    decoded = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' })
+    decoded = JWT.decode(token, jwt_secret_key, true, { algorithm: 'HS256' })
     find(decoded[0]['user_id'])
   rescue JWT::DecodeError, ActiveRecord::RecordNotFound
     nil
+  end
+
+  # 取得 JWT secret key
+  # 優先使用 credentials，如果沒有則使用 application secret_key_base
+  def self.jwt_secret_key
+    Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
+  end
+
+  private
+
+  def jwt_secret_key
+    self.class.jwt_secret_key
   end
 end
 

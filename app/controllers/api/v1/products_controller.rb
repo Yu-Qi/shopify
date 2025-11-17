@@ -59,7 +59,7 @@ module Api
                     .where(id: params[:shop_id], tenants: { seller_profile_id: current_seller_profile.id })
                     .first
         unless @shop
-          render json: { error: '商店不存在或無權限存取' }, status: :not_found
+          render json: { error: '商店不存在或無權限存取', error_code: ::ErrorCodes::Common::NOT_FOUND }, status: :not_found
           return false
         end
         ActsAsTenant.current_tenant = @shop.tenant
@@ -69,7 +69,7 @@ module Api
         # 確保商品屬於當前商店
         @product = @shop.products.find_by(id: params[:id])
         unless @product
-          render json: { error: '商品不存在或無權限存取' }, status: :not_found
+          render json: { error: '商品不存在或無權限存取', error_code: ::ErrorCodes::Common::NOT_FOUND }, status: :not_found
         end
       end
 
